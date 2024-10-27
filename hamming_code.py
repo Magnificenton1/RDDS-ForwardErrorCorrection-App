@@ -77,7 +77,7 @@ class HammingCode:
         corrected_data = self.correct_error(encoded_data) # Correct any errors in the encoded data if possible
 
         if corrected_data is None: # If there are too many errors to correct
-            return None
+            return encoded_data
         # Extract the original data bits from the corrected encoded_data
         original_data = []
         for bit in range(1, self.n + 1):
