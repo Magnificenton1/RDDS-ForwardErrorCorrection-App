@@ -1,5 +1,6 @@
 from BSC_channel import bsc_channel
 from GE_channel import gilbert_elliott_channel
+from hamming_code import HammingCode
 from string_modification import bits_to_string
 from string_modification import string_to_bits
 from inputs import choose_channel
@@ -25,6 +26,9 @@ def main():
     bit_input = string_to_bits(text_input)
     bit_input_reference = bit_input  # reference to unchanged bits
 
+    hamming = HammingCode(len(bit_input))
+    bit_input = hamming.encode(bit_input)
+
     if channel == 0:
         bit_input, flipped_bits = bsc_channel(bit_input)
         # Placeholder for BSC error function
@@ -35,6 +39,7 @@ def main():
         # errors_made = GE_err(BER, bit_input)
 
     # Count final errors (for now this won't work without BSC or GE error functions)
+    bit_input = hamming.decode(bit_input)
     final_errors = count_differences(bit_input, bit_input_reference)
     print(f"Original: {bit_input_reference}")
     print(f"\n: {bits_to_string(bit_input_reference)}\n\n")
