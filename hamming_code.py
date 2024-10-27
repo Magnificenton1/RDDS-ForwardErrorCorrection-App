@@ -19,8 +19,13 @@ class HammingCode:
             m (int): Number of data bits, e.g., 4 for (7,4) code or 11 for (15,11).
         """
         self.m = m
-        self.n = int(2 ** np.ceil(np.log2(m + np.ceil(np.log2(m)) + 1)) - 1)
-        self.r = int(np.log2(self.n + 1))  # Number of parity bits
+        r = 1
+        # Calculate the number of parity bits `r` such that 2^r >= m + r + 1
+        while 2 ** r < m + r + 1:
+            r += 1
+
+        self.r = r
+        self.n = m + r  # Total bits = data bits + parity bits
 
     def encode(self, data):
         """
@@ -67,13 +72,12 @@ class HammingCode:
             encoded_data (np.array): A numpy array of encoded bits (data + parity bits).
 
         Returns:
-            tuple: The original binary data after decoding and correcting errors, the number of detected errors
+            np.array: The original binary data after decoding and correcting errors
         """
-        corrected_data, error_count = self.correct_error(encoded_data) # Correct any errors in the encoded data if possible
+        corrected_data = self.correct_error(encoded_data) # Correct any errors in the encoded data if possible
 
         if corrected_data is None: # If there are too many errors to correct
-            return None, error_count
-
+            return None
         # Extract the original data bits from the corrected encoded_data
         original_data = []
         for bit in range(1, self.n + 1):
@@ -82,7 +86,7 @@ class HammingCode:
             else:
                 original_data.append(corrected_data[bit - 1])
 
-        return np.array(original_data), error_count
+        return np.array(original_data)
 
 
     def correct_error(self, encoded_data):
@@ -93,30 +97,28 @@ class HammingCode:
             encoded_data (np.array): A numpy array of encoded bits (data + parity bits).
 
         Returns:
-            tuple: The encoded data with corrected errors and the number of detected errors.
+            np.array: The encoded data with corrected errors.
         """
-        error_position = 0  # Number of parity bits
-        error_count = 0  # Number of detected errors
+        error_position = 0  # 1-indexed position of the error
 
         # Check each parity bit
         for parity_bit in range(self.r):
             parity_position = 2 ** parity_bit
-            parity = 0
+            calculated_parity = 0
 
             # Calculate the parity for the current parity bit position
             for bit in range(1, self.n + 1):
                 if bit & parity_position:  # If j's binary representation includes the parity position
-                    parity ^= encoded_data[bit - 1]  # Make XOR of the bits
+                    if (bit - 1) != (parity_position - 1):  # Exclude parity bit
+                        calculated_parity ^= encoded_data[bit - 1]  # Make XOR of the bits
 
-            if parity != 0:  # If parity isn't' t zero, there must be an error
+            if calculated_parity != encoded_data[parity_position - 1]:  # Compare the calculated parity with the encoded parity bit
                 error_position += parity_position
-                error_count += 1
 
-        if error_count == 1:  # If error_count is 1, make the single error correction (1-indexed position)
+        if error_position == 0: # No errors detected
+            return encoded_data
+        elif 1 <= error_position <= self.n:  # If an error position is found, attempt to correct
             encoded_data[error_position - 1] ^= 1
-            return encoded_data, error_count
-        elif error_count > 1:
-            print("Multiple errors detected! Unable to correct data.")
-            return None, error_count
-        else:
-            return encoded_data, error_count
+            return encoded_data
+        else:   # Error position is out of bounds, meaning too many errors
+            return None

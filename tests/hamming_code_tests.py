@@ -1,5 +1,7 @@
 import unittest
 import numpy as np
+from numpy.ma.testutils import assert_equal
+
 from hamming_code import HammingCode
 
 
@@ -13,15 +15,15 @@ class TestHammingCode(unittest.TestCase):
         # Test cases for encoding binary data into Hamming code
         test_cases = [
             (4, np.array([1, 0, 1, 1]), np.array([0, 1, 1, 0, 0, 1, 1])),  # 4-bit input
-            (4, np.array([0, 1, 0, 1]), np.array([0, 0, 1, 0, 1, 0, 1])),  # 4-bit input
-            (4, np.array([1, 1, 0, 0]), np.array([0, 1, 1, 1, 0, 1, 0])),  # 4-bit input
-            (4, np.array([1, 0, 1, 0]), np.array([0, 1, 0, 1, 0, 0, 1])),  # 4-bit input
-            (4, np.array([0, 0, 1, 1]), np.array([0, 1, 1, 1, 1, 0, 0])),  # 4-bit input
-            (4, np.array([1, 1, 1, 1]), np.array([1, 1, 1, 0, 0, 1, 1])),  # 4-bit input
-            (7, np.array([1, 0, 1, 1, 0, 1, 0]), np.array([0, 1, 0, 1, 0, 0, 1, 1, 1])),  # 7-bit input
-            (7, np.array([0, 1, 0, 0, 1, 1, 0]), np.array([0, 0, 1, 1, 1, 0, 0, 1, 0])),  # 7-bit input
-            (7, np.array([0, 0, 0, 1, 1, 1, 1]), np.array([0, 0, 1, 0, 1, 0, 0, 1, 1])),  # 7-bit input
-            (7, np.array([1, 1, 1, 0, 0, 0, 1]), np.array([0, 1, 1, 1, 0, 0, 0, 1, 0])),  # 7-bit input
+            (4, np.array([0, 1, 0, 1]), np.array([0, 1, 0, 0, 1, 0, 1])),  # 4-bit input
+            (4, np.array([1, 1, 0, 0]), np.array([0, 1, 1, 1, 1, 0, 0])),  # 4-bit input
+            (4, np.array([1, 0, 1, 0]), np.array([1, 0, 1, 1, 0, 1, 0])),  # 4-bit input
+            (4, np.array([0, 0, 1, 1]), np.array([1, 0, 0, 0, 0, 1, 1])),  # 4-bit input
+            (4, np.array([1, 1, 1, 1]), np.array([1, 1, 1, 1, 1, 1, 1])),  # 4-bit input
+            (11, np.array([1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0]), np.array([1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0])),  # 11-bit input
+            (11, np.array([1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]), np.array([0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1])),  # 11-bit input
+            (11, np.array([0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1]), np.array([0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1])),  # 11-bit input
+            (11, np.array([1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1]), np.array([0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1])),  # 11-bit input
         ]
 
         for m, data, expected_encoded in test_cases:
@@ -35,16 +37,16 @@ class TestHammingCode(unittest.TestCase):
         """
         # Test cases for decoding valid encoded data with no errors
         test_cases = [
-            (4, np.array([1, 0, 1, 1, 0, 1, 1]), np.array([1, 0, 1, 1])),  # 4-bit encoded
-            (4, np.array([0, 0, 1, 0, 1, 0, 1]), np.array([0, 1, 0, 1])),  # 4-bit encoded
-            (4, np.array([0, 1, 1, 0, 0, 1, 1]), np.array([0, 1, 1, 0])),  # 4-bit encoded
-            (4, np.array([1, 1, 1, 0, 0, 1, 1]), np.array([1, 1, 1, 0])),  # 4-bit encoded
-            (7, np.array([0, 0, 1, 0, 1, 0, 1, 1, 1]), np.array([0, 1, 0, 1, 0])),  # 7-bit encoded
-            (7, np.array([0, 1, 1, 1, 0, 1, 0, 1, 0]), np.array([0, 1, 1, 1])),  # 7-bit encoded
-            (7, np.array([1, 1, 0, 1, 0, 1, 1, 0, 1]), np.array([1, 0, 1, 0])),  # 7-bit encoded
-            (7, np.array([0, 0, 0, 1, 1, 0, 0, 1, 1]), np.array([0, 0, 1, 1])),  # 7-bit encoded
-            (7, np.array([1, 1, 1, 1, 0, 0, 0, 1, 1]), np.array([1, 0, 1, 1])),  # 7-bit encoded
-            (7, np.array([1, 0, 1, 0, 1, 0, 0, 1, 1]), np.array([1, 0, 1, 0])),  # 7-bit encoded
+            (4, np.array([0, 1, 1, 0, 0, 1, 1]), np.array([1, 0, 1, 1])),  # 4-bit input
+            (4, np.array([0, 1, 0, 0, 1, 0, 1]), np.array([0, 1, 0, 1])),  # 4-bit input
+            (4, np.array([0, 1, 1, 1, 1, 0, 0]), np.array([1, 1, 0, 0])),  # 4-bit input
+            (4, np.array([1, 0, 1, 1, 0, 1, 0]), np.array([1, 0, 1, 0])),  # 4-bit input
+            (4, np.array([1, 0, 0, 0, 0, 1, 1]), np.array([0, 0, 1, 1])),  # 4-bit input
+            (4, np.array([1, 1, 1, 1, 1, 1, 1]), np.array([1, 1, 1, 1])),  # 4-bit input
+            (11, np.array([1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0]), np.array([1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0])), # 11-bit input
+            (11, np.array([0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1]), np.array([1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1])), # 11-bit input
+            (11, np.array([0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1]), np.array([0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1])), # 11-bit input
+            (11, np.array([0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1]), np.array([1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1])), # 11-bit input
         ]
 
         for m, encoded_data, expected_decoded in test_cases:
@@ -58,21 +60,19 @@ class TestHammingCode(unittest.TestCase):
         """
         # Test cases for correcting a single-bit error in encoded data
         test_cases = [
-            (4, np.array([1, 0, 1, 0, 0, 1, 1]), np.array([1, 0, 1, 1, 0, 1, 1])),  # Error introduced in 4-bit
-            (4, np.array([0, 0, 1, 1, 0, 1, 1]), np.array([0, 0, 1, 0, 1, 0, 1])),  # Error introduced in 4-bit
-            (4, np.array([1, 1, 1, 0, 1, 1, 1]), np.array([1, 1, 1, 0, 0, 1, 1])),  # Error introduced in 4-bit
-            (4, np.array([1, 0, 0, 1, 0, 1, 1]), np.array([1, 0, 1, 1, 0, 1, 1])),  # Error introduced in 4-bit
-            (7, np.array([1, 0, 1, 0, 0, 0, 1, 1, 1]), np.array([1, 0, 1, 1, 0, 1, 1, 1])),  # Error introduced in 7-bit
-            (7, np.array([0, 1, 0, 1, 0, 1, 1, 0, 0]), np.array([0, 1, 0, 1, 1, 1, 0, 1])),  # Error introduced in 7-bit
-            (7, np.array([1, 1, 0, 0, 1, 0, 1, 0, 1]), np.array([1, 0, 0, 1, 0, 1, 0, 1])),  # Error introduced in 7-bit
-            (7, np.array([0, 0, 1, 1, 1, 0, 0, 1, 1]), np.array([0, 0, 1, 0, 1, 0, 0, 1])),  # Error introduced in 7-bit
-            (7, np.array([1, 0, 1, 0, 0, 1, 0, 1, 1]), np.array([1, 0, 1, 1, 0, 1, 1])),  # Error introduced in 7-bit
-            (7, np.array([0, 1, 1, 1, 1, 0, 1, 0, 1]), np.array([0, 1, 1, 1, 0, 1, 0, 1])),  # Error introduced in 7-bit
+            (4, np.array([1, 0, 1, 0, 0, 1, 1]), np.array([0, 0, 1, 1])),  # Error introduced in 4-bit word
+            (4, np.array([0, 0, 1, 1, 0, 1, 1]), np.array([1, 0, 0, 1])),  # Error introduced in 4-bit word
+            (4, np.array([1, 1, 1, 0, 1, 1, 1]), np.array([1, 1, 1, 1])),  # Error introduced in 4-bit word
+            (4, np.array([1, 0, 0, 1, 0, 1, 1]), np.array([0, 0, 1, 1])),  # Error introduced in 4-bit word
+            (11, np.array([1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0]), np.array([0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0])),  # Error introduced in 11-bit word
+            (11, np.array([1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1]), np.array([1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1])),  # Error introduced in 11-bit word
+            (11, np.array([1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1]), np.array([0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1])),  # Error introduced in 11-bit word
+            (11, np.array([1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1]), np.array([0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1])),  # Error introduced in 11-bit word
         ]
 
         for m, encoded_data, expected_corrected in test_cases:
             hamming = HammingCode(m)
-            corrected_data = hamming.correct_error(encoded_data)
+            corrected_data = hamming.decode(encoded_data)
             np.testing.assert_array_equal(corrected_data, expected_corrected)
 
 
