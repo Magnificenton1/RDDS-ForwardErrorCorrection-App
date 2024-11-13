@@ -14,8 +14,11 @@ def bsc_channel(input_bits):
             print("Error: Invalid input. Please enter a float value between 0 and 1.")
     
     # Convert input_bits from string (if needed) to a NumPy array of integers
+    """
     if isinstance(input_bits, str):
         input_bits = np.array([int(bit) for bit in input_bits], dtype=int)
+    """
+    input_bits = np.array([int(bit) for bit in input_bits], dtype=int)
 
     # Generate random numbers for each bit to simulate errors
     random_values = np.random.rand(len(input_bits))
