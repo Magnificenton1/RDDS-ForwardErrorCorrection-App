@@ -1,7 +1,5 @@
 import numpy as np
 
-import numpy as np
-
 def bsc_channel(input_bits):
     while True:
         try:
