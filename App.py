@@ -5,6 +5,8 @@ from string_modification import bits_to_string
 from string_modification import string_to_bits
 from inputs import choose_channel
 from inputs import initialize_input
+from ReedSolomon import ReedSolomon
+import reedsolo
 
 def count_differences(str1, str2):
     # Initialize a counter for differences
@@ -26,9 +28,19 @@ def main():
     bit_input = string_to_bits(text_input)
     bit_input_reference = bit_input  # reference to unchanged bits
 
-    hamming = HammingCode(len(bit_input))
-    bit_input = hamming.encode(bit_input)
+    #hamming = HammingCode(len(bit_input))
+    #bit_input = hamming.encode(bit_input)
 
+    #
+    nsym = 255 - len(bit_input)
+    encoded_data = ReedSolomon.encode_text_rs(bit_input, nsym)
+    print("Zakodowana wiadomość:", encoded_data)
+    if channel == 0:
+        channel_output, flipped_bits = bsc_channel(encoded_data)
+    else:
+        channel_output, flipped_bits = gilbert_elliott_channel(encoded_data)
+        
+    """
     if channel == 0:
         bit_input, flipped_bits = bsc_channel(bit_input)
         # Placeholder for BSC error function
@@ -37,14 +49,31 @@ def main():
         bit_input, flipped_bits = gilbert_elliott_channel(bit_input)
         # Placeholder for GE error function
         # errors_made = GE_err(BER, bit_input)
+    """
+    
 
     # Count final errors (for now this won't work without BSC or GE error functions)
-    bit_input = hamming.decode(bit_input)
+    #bit_input = hamming.decode(bit_input)
+    
     final_errors = count_differences(bit_input, bit_input_reference)
     print(f"Original: {bit_input_reference}")
     print(f"\n: {bits_to_string(bit_input_reference)}\n\n")
-    print(f"Channel: {bit_input}")
-    print(f"\n: {bits_to_string(bit_input)}\n\n")
+
+    #
+    print(f"Channel: {channel_output}")
+    print(f"\n: {bits_to_string(channel_output)}\n\n")
+
+    try:
+        decoded_text = ReedSolomon.decode_text_rs(channel_output, nsym)
+        decoded_text = ''.join(
+            chr(int(''.join(map(str, decoded_text[i:i + 8])), 2)) for i in range(0, len(decoded_text), 8))
+        print("Oryginalna wiadomość po dekodowaniu:", decoded_text)
+    except reedsolo.ReedSolomonError as e:
+        print("Dekodowanie nie powiodło się:", e)
+    #
+    
+    #print(f"Channel: {bit_input}")
+    #print(f"\n: {bits_to_string(bit_input)}\n\n")
     print(f"Errors made in channel: {flipped_bits}")
     print(f"Final number of errors: {final_errors}")
 
