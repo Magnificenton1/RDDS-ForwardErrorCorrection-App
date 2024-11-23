@@ -1,89 +1,113 @@
+import numpy as np
+from inputs import choose_channel, choose_correction_code, initialize_input
+from string_modification import string_to_bits, bits_to_string
 from BSC_channel import bsc_channel
 from GE_channel import gilbert_elliott_channel
+from BCH_code import BCHCode
 from hamming_code import HammingCode
-from string_modification import bits_to_string
-from string_modification import string_to_bits
-from inputs import choose_channel
-from inputs import choose_correction_code
-from inputs import initialize_input
 from ReedSolomon import ReedSolomon
-import reedsolo
 
-def count_differences(str1, str2):
-    # Initialize a counter for differences
-    differences = 0
-    # Find the length of the shorter string to avoid index errors
-    min_len = min(len(str1), len(str2))
-    # Compare characters in both strings up to the length of the shorter one
-    for i in range(min_len):
-        if str1[i] != str2[i]:
-            differences += 1
-    # Add the length difference between the strings to the differences count
-    differences += abs(len(str1) - len(str2))
-    return differences
 
 def main():
-    channel = choose_channel()
-    code = choose_correction_code()
-    #need to add BER - bit error rate
-    text_input = initialize_input()
-    bit_input = string_to_bits(text_input)
-    bit_input_reference = bit_input  # reference to unchanged bits
+    print("=== Data Transmission Simulation ===")
 
-    if code == 1:
-        hamming = HammingCode(len(bit_input))
-        bit_input = hamming.encode(bit_input)
-        print("Encoded data:", bit_input)
+    # 1. Get user input
+    input_text = initialize_input()
+    input_bits = string_to_bits(input_text)
+    m = len(input_bits)  # m is the number of data bits (length of input bits)
 
-    if code == 0:
-        nsym = 255 - len(bit_input)
-        encoded_data = ReedSolomon.encode_text_rs(bit_input, nsym)
-        print("Encoded data:", encoded_data)
-        if channel == 0:
-            channel_output, flipped_bits = bsc_channel(encoded_data)
+    print(f"Number of data bits (m): {m}")
+
+    print(f"Original data: {input_bits}")
+
+    # 2. Choose transmission channel
+    channel_choice = choose_channel()
+
+    # 3. Choose error correction code
+    code_choice = choose_correction_code()
+
+    # 4. Set up simulation parameters
+    if code_choice == 0:  # Reed-Solomon
+        nsym = int(input("\nEnter the number of correction symbols for RS: "))
+        encode_fn = lambda b: ReedSolomon.encode_text_rs(b, nsym)
+        decode_fn = lambda eb: ReedSolomon.decode_text_rs(eb, nsym)
+    elif code_choice == 1:  # Hamming
+        hamming = HammingCode(m)  # Create HammingCode object with m (data bits)
+        encode_fn = hamming.encode
+        decode_fn = hamming.decode
+    elif code_choice == 2:  # BCH
+        # Calculate BCH parameters based on the number of data bits
+        if m <= 7:
+            n = 15
+            k = 7
+            t = 1  # Error correction capability
+        elif m <= 63:
+            n = 63
+            k = 57
+            t = 2
+        elif m <= 127:
+            n = 127
+            k = 113
+            t = 3
+        elif m <= 255:
+            n = 255
+            k = 223
+            t = 4
         else:
-            channel_output, flipped_bits = gilbert_elliott_channel(encoded_data)
-        
-    if code == 1:
-        if channel == 0:
-            bit_input, flipped_bits = bsc_channel(bit_input)
-            # Placeholder for BSC error function
-            # errors_made = BSC_err(BER, bit_input)
-        else:
-            bit_input, flipped_bits = gilbert_elliott_channel(bit_input)
-            # Placeholder for GE error function
-            # errors_made = GE_err(BER, bit_input)
+            print("Error: Input size too large for BCH coding.")
+            return
 
-    
+        bch = BCHCode(n, k, t)
+        encode_fn = bch.encode
+        decode_fn = bch.decode
+        print(f"Using BCH code with n={n}, k={m}, t={t}.")
+    else:
+        print("Unsupported correction code!")
+        return
 
-    # Count final errors (for now this won't work without BSC or GE error functions)
+    # 5. Encode data
+    encoded_bits = encode_fn(input_bits)
+    print("\nEncoded data: ", encoded_bits)
 
-    if code == 1:
-        bit_input = hamming.decode(bit_input)
-    
-    final_errors = count_differences(bit_input, bit_input_reference)
-    print(f"Original: {bit_input_reference}")
-    print(f"\n: {bits_to_string(bit_input_reference)}\n\n")
+    # 6. Transmit through the chosen channel
+    if channel_choice == 0:  # BSC
+        transmitted_bits = bsc_channel(encoded_bits)
+    elif channel_choice == 1:  # Gilbert-Elliot
+        transmitted_bits = gilbert_elliott_channel(encoded_bits)
+    else:
+        print("Unsupported transmission channel!")
+        return
 
-    if code == 0:
-        print(f"Channel: {channel_output}")
-        print(f"\n: {bits_to_string(channel_output)}\n\n")
+    print("\nData after channel transmission: ", transmitted_bits)
 
-        try:
-            decoded_text = ReedSolomon.decode_text_rs(channel_output, nsym)
-            decoded_text = ''.join(
-                chr(int(''.join(map(str, decoded_text[i:i + 8])), 2)) for i in range(0, len(decoded_text), 8))
-            print("Original data after decoding:", decoded_text)
-        except reedsolo.ReedSolomonError as e:
-            print("Decoding failed: ", e)
+    # 7. Decode data
+    # If transmitted_bits is a tuple (which can happen in some channels), take the first element
+    if isinstance(transmitted_bits, tuple):
+        transmitted_bits = transmitted_bits[0]  # Take the array part of the tuple
 
-    if code == 1:
-        print(f"Channel: {bit_input}")
-        print(f"\n: {bits_to_string(bit_input)}\n\n")
+    transmitted_bits = np.array(transmitted_bits, dtype=int).tolist()
+    decoded_bits = decode_fn(transmitted_bits)
+    if decoded_bits[0] != input_bits[0]:
+        decoded_bits = np.insert(decoded_bits, 0, 0)
+    print("\nDecoded data: ", decoded_bits)
 
-    print(f"Errors made in channel: {flipped_bits}")
-    print(f"Final number of errors: {final_errors}")
+    # 8. Convert to text
+    try:
+        output_text = bits_to_string(decoded_bits)
+        print("\nReceived text: ", output_text)
+    except Exception as e:
+        print("\nError decoding to text: ", str(e))
+        output_text = None
+
+    # 9. Analyze results
+    bit_errors = np.sum(input_bits != decoded_bits[:len(input_bits)])
+    ber = bit_errors / len(input_bits)
+    print("\n=== Simulation Results ===")
+    print(f"Number of bit errors: {bit_errors}")
+    print(f"BER (Bit Error Rate): {ber:.4f}")
+    if output_text:
+        print(f"Received text matches original: {output_text == input_text}")
+
 
 if __name__ == "__main__":
     main()
-

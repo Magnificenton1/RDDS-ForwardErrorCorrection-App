@@ -12,13 +12,15 @@ def choose_channel():
 def choose_correction_code():
     while True:
         answer = input(
-            "\n\nChoose type of error correction code: \n-RS (Reed-Solomon)\n-H (Hamming)\n(Input RS or H)\n").lower()
+            "\n\nChoose type of error correction code: \n-RS (Reed-Solomon)\n-H (Hamming)\n-BCH (Bose-Chaudhuri-Hocquenghem)\n(Input RS, H, or BCH)\n").lower()
         if answer == "rs":
             return 0
         elif answer == "h":
             return 1
+        elif answer == "bch":
+            return 2
         else:
-            print("Must be RS or H!")
+            print("Must be RS, H, or BCH!")
 
 
 def initialize_input():
