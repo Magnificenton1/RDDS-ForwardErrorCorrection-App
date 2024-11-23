@@ -28,9 +28,6 @@ class BCHCode:
         Returns:
             np.array: The encoded array of bits, including data and parity bits.
         """
-        """
-            Encodes the given binary data using the BCH code algorithm.
-            """
         # Convert the input data to a Galois field element
         data_poly = galois.Poly(data, field=self.galois_field)
 
@@ -43,6 +40,12 @@ class BCHCode:
     def decode(self, encoded_data):
         """
         Decodes the encoded data using the BCH code algorithm.
+
+        Args:
+            encoded_data (np.array): A numpy array containing the binary data (information bits).
+
+        Returns:
+             np.array: The encoded array of bits, including data and parity bits.
         """
         # Convert the input data to a Galois field element (if it's not already)
         encoded_poly = galois.Poly(encoded_data, field=self.galois_field)
