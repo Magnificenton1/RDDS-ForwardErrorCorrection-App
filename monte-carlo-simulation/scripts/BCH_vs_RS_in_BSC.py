@@ -119,7 +119,7 @@ def run_simulation(input_text, channel, code_type, ber_value):
         process.stdin.write(f"{code_type}\n")
 
         if code_type == "RS":
-            process.stdin.write("16\n")  # Parity symbols for RS (if applicable)
+            process.stdin.write("32\n")  # Parity symbols for RS (if applicable)
 
         process.stdin.write(f"{ber_value}\n")
         process.stdin.flush()
