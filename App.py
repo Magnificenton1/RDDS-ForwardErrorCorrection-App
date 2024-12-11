@@ -6,7 +6,7 @@ from GE_channel import gilbert_elliott_channel
 from BCH_code import BCHCode
 from hamming_code import HammingCode
 from ReedSolomon import ReedSolomon
-
+from LDPC import LDPC
 
 def main():
     print("=== Data Transmission Simulation ===")
