@@ -96,7 +96,7 @@ bch_params = [
 ]
 
 # Input data
-word_size = int(input("Enter the size of the input data (must be less than 255):\n"))
+word_size = int(input("Enter the size of the input data (must be less than 120):\n"))
 input_bits = np.random.randint(0, 2, word_size).tolist()
 
 # BER range
