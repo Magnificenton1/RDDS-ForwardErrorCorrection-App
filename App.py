@@ -61,6 +61,28 @@ def main():
         encode_fn = bch.encode
         decode_fn = bch.decode
         print(f"Using BCH code with n={n}, k={m}, t={t}.")
+
+    elif code_choice == 3: #LDPC
+        # Parametry kodu LDPC w zależności od długości wejściowego tekstu (m)
+        if m <= 7:
+            n = 15
+        elif m <= 63:
+            n = 63
+        elif m <= 127:
+            n = 127
+        elif m <= 255:
+            n = 255
+        else:
+            print("Error: Input size too large for LDPC coding.")
+            return
+
+        print(f"Obliczona długość kodu n: {n}")
+        print(f"Używany kod LDPC z m={m} i n={n}")
+
+        # Tworzenie obiektu klasy LDPC
+        ldpc = LDPC(n, m)  # Zakładając, że LDPC potrzebuje tylko n (długość kodu) i m (długość danych)
+        encode_fn = ldpc.encode
+        decode_fn = ldpc.decode
     else:
         print("Unsupported correction code!")
         return
