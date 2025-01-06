@@ -111,7 +111,7 @@ for i, word_size in enumerate(word_sizes):
     # Plot results for BSC
     for n, k in ldpc_params:
         errors_bsc = [r[3] for r in results_bsc if r[1] == n and r[2] == k]
-        ax_bsc.plot(bers, errors_bsc, label=f"BSC (n={n}, k={k}, word size={word_size})", marker='o')
+        ax_bsc.plot(bers, errors_bsc, label=f"LDPC (n={n}, k={k}, word size={word_size})", marker='o')
 
     ax_bsc.set_xscale('log')
     ax_bsc.set_xlabel("BER")
@@ -125,7 +125,7 @@ for i, word_size in enumerate(word_sizes):
     # Plot results for GE
     for n, k in ldpc_params:
         errors_ge = [r[3] for r in results_ge if r[1] == n and r[2] == k]
-        ax_ge.plot(bers, errors_ge, label=f"GE (n={n}, k={k}, word size={word_size})", marker='x')
+        ax_ge.plot(bers, errors_ge, label=f"LDPC (n={n}, k={k}, word size={word_size})", marker='x')
 
     ax_ge.set_xscale('log')
     ax_ge.set_xlabel("BER")

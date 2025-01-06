@@ -117,7 +117,7 @@ for i, word_size in enumerate(word_sizes):
     # Plot results for BSC
     for n, k, t in bch_params:
         errors_bsc = [r[4] for r in results_bsc if r[1] == n and r[2] == k and r[3] == t]
-        ax_bsc.plot(bers, errors_bsc, label=f"BSC (n={n}, k={k}, t={t})", marker='o')
+        ax_bsc.plot(bers, errors_bsc, label=f"BCH (n={n}, k={k}, t={t})", marker='o')
 
     ax_bsc.set_xscale('log')
     ax_bsc.set_xlabel("BER")
@@ -131,7 +131,7 @@ for i, word_size in enumerate(word_sizes):
     # Plot results for GE
     for n, k, t in bch_params:
         errors_ge = [r[4] for r in results_ge if r[1] == n and r[2] == k and r[3] == t]
-        ax_ge.plot(bers, errors_ge, label=f"GE (n={n}, k={k}, t={t})", marker='x')
+        ax_ge.plot(bers, errors_ge, label=f"BCH (n={n}, k={k}, t={t})", marker='x')
 
     ax_ge.set_xscale('log')
     ax_ge.set_xlabel("BER")
