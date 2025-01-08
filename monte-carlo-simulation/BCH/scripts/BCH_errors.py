@@ -29,42 +29,63 @@ def gilbert_elliott_channel(bits, p, r, h, k):
     return transmitted_bits
 
 # Function to simulate and save results
-def simulate_and_save_results(channel_fn, channel_name, bch_params, input_bits, bers, output_dir_figures, output_dir_csv, word_size, *channel_args):
-    results = []
+def simulate_and_save_results(channel_fn, channel_name, bch_params, input_bits, bers,
+                              output_dir_csv, *channel_args):
+    csv_file = f"{output_dir_csv}/{channel_name}_results_combined.csv"
+
+    # Create CSV file with header
+    with open(csv_file, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["BER", "n", "k", "t", "Average Bit Errors"])
+
+    num_samples = 500  # Number of samples for each BER
+    all_results = []  # List to return all results
+
     for ber in bers:
         print(f"Simulating {channel_name} channel with BER={ber}")
+        results_for_ber = []  # Results for a single BER
+
         for n, k, t in bch_params:
             bch = BCHCode(n, k, t)
             input_chunks = [input_bits[i:i + k] for i in range(0, len(input_bits), k)]
-            bit_errors = 0
-            for chunk in input_chunks:
-                # Pad with zeros if necessary
-                if len(chunk) < k:
-                    chunk.extend([0] * (k - len(chunk)))
-                encoded_bits = bch.encode(chunk)
-                if channel_name == "GE":
-                    transmitted_bits = channel_fn(encoded_bits, *channel_args)
-                else:
-                    transmitted_bits = channel_fn(encoded_bits, ber)
-                decoded_bits = bch.decode(transmitted_bits)
+            total_bit_errors = 0  # Number of errors for averaging
 
-                # Correctly compare errors
-                if len(decoded_bits) < len(chunk):
-                    decoded_bits = np.pad(decoded_bits, (0, len(chunk) - len(decoded_bits)), 'constant')
-                elif len(decoded_bits) > len(chunk):
-                    decoded_bits = decoded_bits[:len(chunk)]
+            for _ in range(num_samples):  # Multiple simulations
+                bit_errors = 0
+                for chunk in input_chunks:
+                    # Pad with zeros if necessary
+                    if len(chunk) < k:
+                        chunk.extend([0] * (k - len(chunk)))
+                    encoded_bits = bch.encode(chunk)
+                    if channel_name == "GE":
+                        transmitted_bits = channel_fn(encoded_bits, *channel_args)
+                    else:
+                        transmitted_bits = channel_fn(encoded_bits, ber)
+                    decoded_bits = bch.decode(transmitted_bits)
 
-                bit_errors += np.sum(np.array(chunk) != np.array(decoded_bits))
-            results.append((ber, n, k, t, bit_errors))
+                    # Correctly compare errors
+                    if len(decoded_bits) < len(chunk):
+                        decoded_bits = np.pad(decoded_bits, (0, len(chunk) - len(decoded_bits)), 'constant')
+                    elif len(decoded_bits) > len(chunk):
+                        decoded_bits = decoded_bits[:len(chunk)]
 
-    # Save results to CSV file
-    csv_file = f"{output_dir_csv}/{channel_name}_results_combined.csv"
-    with open(csv_file, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["BER", "n", "k", "t", "Bit Errors"])
-        writer.writerows(results)
+                    bit_errors += np.sum(np.array(chunk) != np.array(decoded_bits))
 
-    return results
+                total_bit_errors += bit_errors
+
+            # Calculate the average number of errors for the given BER
+            avg_bit_errors = total_bit_errors / num_samples
+            result = (ber, n, k, t, avg_bit_errors)
+            results_for_ber.append(result)
+            all_results.append(result)
+
+        # Save results for the current BER to the CSV file
+        with open(csv_file, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(results_for_ber)
+
+    return all_results
+
 
 # BCH parameters
 bch_params = [
@@ -107,10 +128,10 @@ for i, word_size in enumerate(word_sizes):
     input_bits = np.random.randint(0, 2, word_size).tolist()
 
     # Simulate for BSC channel
-    results_bsc = simulate_and_save_results(bsc_channel, "BSC", bch_params, input_bits, bers, output_dir_figures, output_dir_csv, word_size)
+    results_bsc = simulate_and_save_results(bsc_channel, "BSC", bch_params, input_bits, bers, output_dir_csv)
 
     # Simulate for Gilbert-Elliott channel
-    results_ge = simulate_and_save_results(gilbert_elliott_channel, "GE", bch_params, input_bits, bers, output_dir_figures, output_dir_csv, word_size, p, r, h, k)
+    results_ge = simulate_and_save_results(gilbert_elliott_channel, "GE", bch_params, input_bits, bers, output_dir_csv, p, r, h, k)
 
     # Get the current axis for plotting for BSC
     ax_bsc = axes_bsc[i]

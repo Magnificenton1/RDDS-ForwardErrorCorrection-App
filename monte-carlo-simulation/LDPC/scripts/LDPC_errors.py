@@ -31,37 +31,44 @@ def gilbert_elliott_channel(bits, p, r, h, k):
 # Function to simulate and save results
 def simulate_and_save_results(channel_fn, channel_name, ldpc_params, input_bits, bers, output_dir_figures, output_dir_csv, word_size, *channel_args):
     results = []
+    num_samples = 1000
     for ber in bers:
         print(f"Simulating {channel_name} channel with BER={ber}")
         for n, k in ldpc_params:
             ldpc = LDPC(n, k)
             input_chunks = [input_bits[i:i + k] for i in range(0, len(input_bits), k)]
-            bit_errors = 0
-            for chunk in input_chunks:
-                # Pad with zeros if necessary
-                if len(chunk) < k:
-                    chunk.extend([0] * (k - len(chunk)))
-                encoded_bits = ldpc.encode(chunk)
-                if channel_name == "GE":
-                    transmitted_bits = channel_fn(encoded_bits, *channel_args)
-                else:
-                    transmitted_bits = channel_fn(encoded_bits, ber)
-                decoded_bits = ldpc.decode(transmitted_bits)
+            total_bit_errors = 0
 
-                # Correctly compare errors
-                if len(decoded_bits) < len(chunk):
-                    decoded_bits = np.pad(decoded_bits, (0, len(chunk) - len(decoded_bits)), 'constant')
-                elif len(decoded_bits) > len(chunk):
-                    decoded_bits = decoded_bits[:len(chunk)]
+            for _ in range(num_samples):
+                bit_errors = 0
+                for chunk in input_chunks:
+                    # Pad with zeros if necessary
+                    if len(chunk) < k:
+                        chunk.extend([0] * (k - len(chunk)))
+                    encoded_bits = ldpc.encode(chunk)
+                    if channel_name == "GE":
+                        transmitted_bits = channel_fn(encoded_bits, *channel_args)
+                    else:
+                        transmitted_bits = channel_fn(encoded_bits, ber)
+                    decoded_bits = ldpc.decode(transmitted_bits)
 
-                bit_errors += np.sum(np.array(chunk) != np.array(decoded_bits))
-            results.append((ber, n, k, bit_errors))
+                    # Correctly compare errors
+                    if len(decoded_bits) < len(chunk):
+                        decoded_bits = np.pad(decoded_bits, (0, len(chunk) - len(decoded_bits)), 'constant')
+                    elif len(decoded_bits) > len(chunk):
+                        decoded_bits = decoded_bits[:len(chunk)]
+
+                    bit_errors += np.sum(np.array(chunk) != np.array(decoded_bits))
+                total_bit_errors += bit_errors
+
+            avg_bit_errors = total_bit_errors / num_samples
+            results.append((ber, n, k, avg_bit_errors))
 
     # Save results to CSV file
     csv_file = f"{output_dir_csv}/{channel_name}_results_combined.csv"
     with open(csv_file, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["BER", "n", "k", "t", "Bit Errors"])
+        writer.writerow(["BER", "n", "k", "Average Bit Errors"])
         writer.writerows(results)
 
     return results
@@ -115,7 +122,7 @@ for i, word_size in enumerate(word_sizes):
 
     ax_bsc.set_xscale('log')
     ax_bsc.set_xlabel("BER")
-    ax_bsc.set_ylabel("Bit Errors")
+    ax_bsc.set_ylabel("Average Bit Errors")
     ax_bsc.set_title(f"BSC Channel - Word Size {word_size}")
     ax_bsc.grid(True)
     ax_bsc.legend(loc='upper left', bbox_to_anchor=(1.05, 1), ncol=1)  # Add legend for each plot
@@ -129,7 +136,7 @@ for i, word_size in enumerate(word_sizes):
 
     ax_ge.set_xscale('log')
     ax_ge.set_xlabel("BER")
-    ax_ge.set_ylabel("Bit Errors")
+    ax_ge.set_ylabel("Average Bit Errors")
     ax_ge.set_title(f"GE Channel - Word Size {word_size}")
     ax_ge.grid(True)
     ax_ge.legend(loc='upper left', bbox_to_anchor=(1.05, 1), ncol=1)  # Add legend for each plot
