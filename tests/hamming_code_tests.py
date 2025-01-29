@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
-from numpy.ma.testutils import assert_equal
 
-from hamming_code import HammingCode
+from codes.hamming_code import HammingCode
 
 
 class TestHammingCode(unittest.TestCase):

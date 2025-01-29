@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from BCH_code import BCHCode
+from codes.BCH_code import BCHCode
 
 
 class TestBCHCode(unittest.TestCase):

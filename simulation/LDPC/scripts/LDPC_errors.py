@@ -1,13 +1,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
-from LDPC import LDPC
+from codes.LDPC import LDPC
 
 # Functions simulating transmission channels
 def bsc_channel(bits, ber):
+    """
+    Simulates a Binary Symmetric Channel (BSC) by flipping bits with a given Bit Error Rate (BER).
+
+    Parameters:
+    bits (list): List of bits to be transmitted.
+    ber (float): Bit Error Rate.
+
+    Returns:
+    list: List of bits after transmission through the BSC.
+    """
     return [bit if np.random.rand() > ber else 1 - bit for bit in bits]
 
 def gilbert_elliott_channel(bits, p, r, h, k):
+    """
+    Simulates a Gilbert-Elliott channel with given parameters.
+
+    Parameters:
+    bits (list): List of bits to be transmitted.
+    p (float): Probability of transitioning from Good to Bad state.
+    r (float): Probability of transitioning from Bad to Good state.
+    h (float): Error probability in Good state.
+    k (float): Error probability in Bad state.
+
+    Returns:
+    list: List of bits after transmission through the Gilbert-Elliott channel.
+    """
     state = 0  # Start in Good state
     transmitted_bits = []
 
@@ -30,6 +53,23 @@ def gilbert_elliott_channel(bits, p, r, h, k):
 
 # Function to simulate and save results
 def simulate_and_save_results(channel_fn, channel_name, ldpc_params, input_bits, bers, output_dir_figures, output_dir_csv, word_size, *channel_args):
+    """
+    Simulates data transmission through a given channel and saves the results to a CSV file.
+
+    Parameters:
+    channel_fn (function): Function to simulate the transmission channel.
+    channel_name (str): Name of the channel.
+    ldpc_params (list): List of LDPC code parameters (n, k).
+    input_bits (list): List of input bits to be transmitted.
+    bers (list): List of Bit Error Rates to simulate.
+    output_dir_figures (str): Directory to save the figures.
+    output_dir_csv (str): Directory to save the CSV file.
+    word_size (int): Size of the word to be transmitted.
+    *channel_args: Additional arguments for the channel function.
+
+    Returns:
+    list: List of all simulation results.
+    """
     results = []
     num_samples = 1000
     for ber in bers:
