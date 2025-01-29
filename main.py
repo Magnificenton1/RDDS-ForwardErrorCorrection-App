@@ -1,14 +1,17 @@
 import numpy as np
-from inputs import choose_channel, choose_correction_code, initialize_input
-from string_modification import string_to_bits, bits_to_string
-from BSC_channel import bsc_channel
-from GE_channel import gilbert_elliott_channel
-from BCH_code import BCHCode
-from hamming_code import HammingCode
-from ReedSolomon import ReedSolomon
-from LDPC import LDPC
+from simulation.scripts.inputs import choose_channel, choose_correction_code, initialize_input
+from simulation.scripts.string_modification import string_to_bits, bits_to_string
+from channels.BSC_channel import bsc_channel
+from channels.GE_channel import gilbert_elliott_channel
+from codes.BCH_code import BCHCode
+from codes.hamming_code import HammingCode
+from codes.ReedSolomon import ReedSolomon
+from codes.LDPC import LDPC
 
 def main():
+    """
+    Main function to run the data transmission simulation.
+    """
     print("=== Data Transmission Simulation ===")
 
     # 1. Get user input
@@ -17,7 +20,6 @@ def main():
     m = len(input_bits)  # m is the number of data bits (length of input bits)
 
     print(f"Number of data bits (m): {m}")
-
     print(f"Original data: {input_bits}")
 
     # 2. Choose transmission channel
@@ -62,8 +64,8 @@ def main():
         decode_fn = bch.decode
         print(f"Using BCH code with n={n}, k={m}, t={t}.")
 
-    elif code_choice == 3: #LDPC
-        # Parametry kodu LDPC w zależności od długości wejściowego tekstu (m)
+    elif code_choice == 3:  # LDPC
+        # LDPC code parameters based on the length of the input text (m)
         if m <= 7:
             n = 15
         elif m <= 63:
@@ -76,11 +78,11 @@ def main():
             print("Error: Input size too large for LDPC coding.")
             return
 
-        print(f"Obliczona długość kodu n: {n}")
-        print(f"Używany kod LDPC z m={m} i n={n}")
+        print(f"Calculated code length n: {n}")
+        print(f"Using LDPC code with m={m} and n={n}")
 
-        # Tworzenie obiektu klasy LDPC
-        ldpc = LDPC(n, m)  # Zakładając, że LDPC potrzebuje tylko n (długość kodu) i m (długość danych)
+        # Create LDPC object
+        ldpc = LDPC(n, m)  # Assuming LDPC needs only n (code length) and m (data length)
         encode_fn = ldpc.encode
         decode_fn = ldpc.decode
     else:
@@ -129,7 +131,6 @@ def main():
     print(f"BER (Bit Error Rate): {ber:.4f}")
     if output_text:
         print(f"Received text matches original: {output_text == input_text}")
-
 
 if __name__ == "__main__":
     main()
